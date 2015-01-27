@@ -1,0 +1,25 @@
+{
+	"name": "bmwcarit/silex-jira-oauth-provider",
+	"description": "A silex service provider that allows oauth authentication with Atlassian JIRA",
+	"keywords":[ "silex", "jira", "oauth", "provider" ],
+	"require": {
+		"silex/silex": "~1.2",
+		"guzzlehttp/guzzle": "~5.0",
+		"guzzlehttp/oauth-subscriber": ">0.2",
+		"monolog/monolog": "~1.0",
+		"symfony/security": "~2.3,<2.7"
+	},
+	"license": "MIT",
+	"authors": [
+		{
+			"name": "Timo Mueller",
+			"email": "timo.mueller@bmw-carit.de",
+			"homepage": "https://www.openhub.net/accounts/elmi82"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"bmwcarit\\": "src/"
+		}
+	}
+}
