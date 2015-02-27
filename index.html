@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Silex-jira-oauth-provider : The Silex JIRA OAuth Provider provides a simple mechanism to enable your applicaton to use the Atlassian JIRA REST API without the need of password transmission.">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Silex-jira-oauth-provider</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/bmwcarit/silex-jira-oauth-provider">View on GitHub</a>
+
+          <h1 id="project_title">Silex-jira-oauth-provider</h1>
+          <h2 id="project_tagline">The Silex JIRA OAuth Provider provides a simple mechanism to enable your applicaton to use the Atlassian JIRA REST API without the need of password transmission.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/bmwcarit/silex-jira-oauth-provider/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/bmwcarit/silex-jira-oauth-provider/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a id="silex-jira-oauth-provider" class="anchor" href="#silex-jira-oauth-provider" aria-hidden="true"><span class="octicon octicon-link"></span></a>Silex JIRA OAuth Provider</h1>
+
+<p>The Silex JIRA OAuth Provider provides a simple mechanism to enable your
+applicaton to use the <a href="https://developer.atlassian.com/display/JIRADEV/JIRA+REST+APIs">Atlassian JIRA REST API</a> without the
+need of password transmission. Instead of using basic authentication an access
+token is created using JIRAs OAuth interface. This token can then be used with a
+<a href="http://guzzle.readthedocs.org/en/latest/">Guzzle HTTP Client</a> to retrieve,
+modify and create issues in JIRA.</p>
+
+<h2>
+<a id="prerequisites" class="anchor" href="#prerequisites" aria-hidden="true"><span class="octicon octicon-link"></span></a>Prerequisites</h2>
+
+<p>In order for the provider to work, you need the following</p>
+
+<ul>
+<li>A running <a href="https://www.atlassian.com/software/jira">Atlassian JIRA</a> server.</li>
+<li>An application link for a generic application with an incoming
+authorization configured (see the <a href="https://confluence.atlassian.com/display/JIRA/Linking+to+Another+Application">documentation</a>
+for more details).</li>
+</ul>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>You can install the silex jira oauth provider through
+<a href="https://getcomposer.org/">Composer</a></p>
+
+<pre><code>composer require bmwcarit/silex-jira-oauth-provider "dev-master"
+</code></pre>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>Before you can use the provider you need to configure and register it with your
+silex application. The following code shows the most common configuration
+options that are necessary:</p>
+
+<pre><code>$app-&gt;register(new JiraOAuthServiceProvider(array(
+    'base_url' =&gt; 'https://www.yourcorp.com/jira/',
+    'private_key' =&gt; __DIR__ . '/jira.pem',
+    'consumer_key' =&gt; 'yoursecretkey',
+)));
+</code></pre>
+
+<p>Once the provider is registered your application will have a new controller
+mounted at <code>/jira</code>. To start the authentication process simple open the route
+with the name <code>jira-connect</code>. Either you redirect within your code</p>
+
+<pre><code>$app-&gt;redirect($app['url_generator']-&gt;generate('jira-connect'));
+</code></pre>
+
+<p>or you add link to your twig templates.</p>
+
+<pre><code>&lt;a href="{{ path('jira-connect') }}"&gt;Click here to authenticate with Jira&lt;/a&gt;
+</code></pre>
+
+<p>Once the authentication is successful the provider will redirect to the route
+with the name <code>home</code> or, if it does not exist, to <code>/</code> of your silex application.</p>
+
+<p>You can alter this behavior by adding a redirect parameter containing the name
+of a route or an URL, to which the provider should redirect after successful
+authentication. For example:</p>
+
+<pre><code>$app-&gt;redirect($app['url_generator']-&gt;generate('jira-connect',
+                                        array('redirect' =&gt; 'yourroute')));
+</code></pre>
+
+<p>Or in your twig template:</p>
+
+<pre><code>&lt;a href="{{ path('jira-connect', {redirect: 'yourroute'}) }}"&gt;
+    Click here to authenticate with Jira&lt;/a&gt;
+</code></pre>
+
+<p>After successful authentication you can use the <a href="https://developer.atlassian.com/display/JIRADEV/JIRA+REST+APIs">Atlassian JIRA REST API</a> with the
+available <a href="http://guzzle.readthedocs.org/en/latest/">Guzzle HTTP Client</a>.
+For example:</p>
+
+<pre><code>$app['jira.oauth.client']-&gt;get('rest/api/2/priority');
+</code></pre>
+
+<h2>
+<a id="configuration-options" class="anchor" href="#configuration-options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Configuration Options</h2>
+
+<ul>
+<li>
+<strong>base_url:</strong>
+The base URL of your Atlassian JIRA server.
+(<em>default</em>: <code>http://localhost:8181/</code>)</li>
+<li>
+<strong>oauth_base_url:</strong>
+The path to the oauth plugin. Atlassian JIRA serves the OAuth APIs here by
+default.
+(<em>default</em>: <code>plugins/servlet/oauth/</code>)</li>
+<li>
+<strong>private_key:</strong>
+The path to the private key file that authenticate your application with
+Atlassian JIRA.
+(<em>default</em>: <code>''</code>)</li>
+<li>
+<strong>consumer_key:</strong>
+A string containing the consumer key that is used to authenticate your
+application with Atlassian JIRA.
+(<em>default</em>: <code>''</code>)</li>
+<li>
+<strong>url_prefix.request_token:</strong>
+The URL prefix to construct the URL to request a new token. This is constructed
+with the <code>base_url</code> and the <code>oauth_base_url</code>. The default of this option already
+matches JIRAs default.
+(<em>default</em>: <code>request-token</code>)</li>
+<li>
+<strong>url_prefix.authorization:</strong>
+The URL prefix to construct the URL to authorize a token. This is constructed
+with the <code>base_url</code> and the <code>oauth_base_url</code>. The default of this option already
+matches JIRAs default.
+(<em>default</em>: <code>authorize?oauth_token=%s</code>)</li>
+<li>
+<strong>url_prefix.access_token:</strong>
+The URL prefix to construct the URL to request an access token. This is
+constructed with the <code>base_url</code> and the <code>oauth_base_url</code>. The default of this
+option already matches JIRAs default.
+(<em>default</em>: <code>access-token</code>)</li>
+<li>
+<strong>route_name.callback:</strong>
+The name of the route which handles the callback from Atlassian JIRA. The
+callback is transmitted to JIRA and once the user allows the application to
+access JIRA he will be redirected to this URL.
+(<em>default</em>: <code>jira-callback</code>)</li>
+<li>
+<strong>route_name.default_redirect:</strong>
+The name of the route to redirect the user upon successful authentication. This
+route is only used if you do not set the redirect parameters on the
+<code>jira-connect</code> route.
+(<em>default</em>: <code>home</code>)</li>
+<li>
+<strong>automount:</strong>
+If this is set to true the provider will automatically mount the <code>jira-connect</code>
+and <code>jira-callback</code> routes under <code>/jira</code>. If you set this to false make sure you
+mount the controller yourself. To do this simply call
+<code>$app-&gt;mount('/yourpath', $app['jira.controller.provider']);</code>
+(<em>default</em>: <code>true</code>)</li>
+</ul>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>The silex-jira-oauth-provider is licensed under the MIT license.</p>
+
+<h2>
+<a id="acknowledgment" class="anchor" href="#acknowledgment" aria-hidden="true"><span class="octicon octicon-link"></span></a>Acknowledgment</h2>
+
+<p>The initial work is based on the <a href="https://bitbucket.org/atlassian_tutorial/atlassian-oauth-examples/src/d625161454d1ca97b4515c6147b093fac9a68f7e/php/LICENSE?at=default">JIRA OAuth PHP examples</a>
+by Stan Lemon</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Silex-jira-oauth-provider maintained by <a href="https://github.com/bmwcarit">bmwcarit</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
