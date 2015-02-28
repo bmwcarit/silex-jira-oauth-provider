@@ -28,6 +28,16 @@ You can install the silex jira oauth provider through
 
 	composer require bmwcarit/silex-jira-oauth-provider "dev-master"
 
+The provider currently uses the dev-master version of the
+[guzzlehttp/oauth-provider](https://github.com/guzzle/oauth-subscriber)
+as it contains a necessary bugfix. To be able to pull this version
+with composer you need to set the minimum stability of your project to
+"dev":
+
+    {
+        "minimum-stability": "dev"
+	}
+
 Usage
 -----
 
