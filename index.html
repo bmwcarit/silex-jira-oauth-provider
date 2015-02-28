@@ -62,6 +62,17 @@ for more details).</li>
 <pre><code>composer require bmwcarit/silex-jira-oauth-provider "dev-master"
 </code></pre>
 
+<p>The provider currently uses the dev-master version of the
+<a href="https://github.com/guzzle/oauth-subscriber">guzzlehttp/oauth-provider</a>
+as it contains a necessary bugfix. To be able to pull this version
+with composer you need to set the minimum stability of your project to
+"dev":</p>
+
+<pre><code>{
+    "minimum-stability": "dev"
+}
+</code></pre>
+
 <h2>
 <a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
 
