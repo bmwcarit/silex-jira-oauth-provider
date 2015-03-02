@@ -1,6 +1,7 @@
 {
 	"name": "bmwcarit/silex-jira-oauth-provider",
 	"description": "A silex service provider that allows oauth authentication with Atlassian JIRA",
+	"homepage": "http://bmwcarit.github.io/silex-jira-oauth-provider/",
 	"keywords":[ "silex", "jira", "oauth", "provider" ],
 	"require": {
 		"silex/silex": "~1.2",
