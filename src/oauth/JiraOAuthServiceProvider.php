@@ -25,6 +25,7 @@ use Silex\Application;
 use Silex\ServiceProviderInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Subscriber\Oauth\Oauth1;
+use Exception;
 
 class JiraOAuthServiceProvider implements ServiceProviderInterface {
 	protected $config;
