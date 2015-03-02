@@ -68,7 +68,7 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface {
 		$app['jira.access_token_url'] = $this->getAbsoluteURL('access_token');
 
 		$app['jira.oauth.client'] = $app->share(function() use ($app) {
-			if ($this->session->get('oauth') == null) {
+			if (is_null($this->session->get('oauth'))) {
 				$this->log->addError(
 						'Jira OAuth client is not initialized correctly.' .
 						'Please create valid credentials first.');
