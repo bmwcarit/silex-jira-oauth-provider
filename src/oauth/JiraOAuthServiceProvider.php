@@ -95,12 +95,12 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface {
 			return $this->makeAuthUrl();
 		});
 
-		$app['jira.default_redirect'] = $app->share(function() use ($app) {
+		$app['jira.default_redirect'] = $app->share(function() {
 			return $this->url_generator->
 						generate($this->config['route_name.default_redirect']);
 		});
 
-		$app['jira.controller.provider'] = $app->share(function() use ($app) {
+		$app['jira.controller.provider'] = $app->share(function() {
 			return new JiraOAuthControllerProvider();
 		});
 	}
