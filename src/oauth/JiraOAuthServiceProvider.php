@@ -128,7 +128,6 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface {
 		$this->requestCredentials($oauth, $url);
 
 		$this->app->extend('jira.oauth.client', function ($client, $app) {
-			$client = null;
 			$oauth = $this->getOAuth();
 			return $this->getClient($oauth);
 		});
