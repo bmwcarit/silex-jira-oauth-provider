@@ -6,7 +6,7 @@
 	"require": {
 		"silex/silex": "~1.2",
 		"guzzlehttp/guzzle": "~5.0",
-		"guzzlehttp/oauth-subscriber": "dev-master",
+		"guzzlehttp/oauth-subscriber": "0.2.0",
 		"monolog/monolog": "~1.0",
 		"symfony/security": "~2.3,<2.7"
 	},
