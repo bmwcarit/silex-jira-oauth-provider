@@ -21,13 +21,15 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+use Pimple\Container;
+use Silex\Api\BootableProviderInterface;
 use Silex\Application;
-use Silex\ServiceProviderInterface;
+use Pimple\ServiceProviderInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Subscriber\Oauth\Oauth1;
 use Exception;
 
-class JiraOAuthServiceProvider implements ServiceProviderInterface {
+class JiraOAuthServiceProvider implements ServiceProviderInterface, BootableProviderInterface  {
 	protected $config;
 	protected $app;
 	protected $log;
@@ -57,7 +59,7 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface {
 		}
 	}
 
-	function register(Application $app) {
+	function register(Container $app) {
 		$this->app = $app;
 		$this->log = $app['monolog'];
 		$this->session = $app['session'];
@@ -67,7 +69,7 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface {
 		$app['jira.authorization_url'] = $this->getAbsoluteURL('authorization');
 		$app['jira.access_token_url'] = $this->getAbsoluteURL('access_token');
 
-		$app['jira.oauth.client'] = $app->share(function() use ($app) {
+		$app['jira.oauth.client'] = function() use ($app) {
 			if (is_null($this->session->get('oauth'))) {
 				$this->log->addError(
 						'Jira OAuth client is not initialized correctly.' .
@@ -79,30 +81,30 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface {
 			$oauth = $this->getOAuth();
 
 			return $this->getClient($oauth);
-		});
+		};
 
 		$app['jira.oauth.temp_credentials'] = $app->protect(
-				function($redirect = null) {
-			return $this->requestTempCredentials($redirect);
-		});
+			function($redirect = null) {
+				return $this->requestTempCredentials($redirect);
+			});
 
 		$app['jira.oauth.auth_credentials'] = $app->protect(
 				function($redirect = null) {
 			return $this->requestAuthCredentials($redirect);
 		});
 
-		$app['jira.oauth.auth_url'] = $app->share(function() {
+		$app['jira.oauth.auth_url'] = function() {
 			return $this->makeAuthUrl();
-		});
+		};
 
-		$app['jira.default_redirect'] = $app->share(function() {
+		$app['jira.default_redirect'] = function() {
 			return $this->url_generator->
 						generate($this->config['route_name.default_redirect']);
-		});
+		};
 
-		$app['jira.controller.provider'] = $app->share(function() {
+		$app['jira.controller.provider'] = function() {
 			return new JiraOAuthControllerProvider();
-		});
+		};
 	}
 
 	protected function requestTempCredentials($redirect) {
