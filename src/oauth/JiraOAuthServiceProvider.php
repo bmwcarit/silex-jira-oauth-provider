@@ -27,6 +27,7 @@ use Silex\Application;
 use Pimple\ServiceProviderInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Subscriber\Oauth\Oauth1;
+use GuzzleHttp\HandlerStack;
 use Exception;
 
 class JiraOAuthServiceProvider implements ServiceProviderInterface, BootableProviderInterface  {
@@ -38,9 +39,10 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface, BootableProv
 
 	public function __construct(array $config) {
 		$defaults = array(
-			'base_url' => 'http://localhost:8181/',
+			'base_uri' => 'http://localhost:8181/',
 			'oauth_base_url' => 'plugins/servlet/oauth/',
 			'private_key' => '',
+            'private_key_passphrase' => '',
 			'consumer_key' => '',
 			'url_prefix.request_token' => 'request-token',
 			'url_prefix.authorization' => 'authorize?oauth_token=%s',
@@ -108,7 +110,7 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface, BootableProv
 	}
 
 	protected function requestTempCredentials($redirect) {
-		$url = $this->config['base_url'] .
+		$url = $this->config['base_uri'] .
 				$this->app['jira.request_token_url'] .
 				'?oauth_callback=' . $this->getCallbackURL($redirect);
 
@@ -120,7 +122,7 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface, BootableProv
 	}
 
 	protected function requestAuthCredentials($redirect) {
-		$url = $this->config['base_url'] . $this->app['jira.access_token_url'] .
+		$url = $this->config['base_uri'] . $this->app['jira.access_token_url'] .
 				'?oauth_callback=' . $this->getCallbackURL($redirect) .
 				'&oauth_verifier=' . $this->app['jira.oauth_verifier'];
 
@@ -139,17 +141,21 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface, BootableProv
 
 	protected function requestCredentials($oauth, $url) {
 		$client = $this->getClient($oauth);
-		$response = $client->post($url);
-		$this->setToken($response);
+        $response = $client->post($url);
+        $this->setToken($response);
 	}
 
 	protected function getCallbackURL($redirect = null) {
-		$url = $this->url_generator->generate(
+		$url = $this->getCallbackBaseURL().$this->url_generator->generate(
 						$this->config['route_name.callback'],
 						array('url' => $redirect), true);
 
 		return urlencode($url);
 	}
+
+    protected function getCallbackBaseURL(){
+        return $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'];
+    }
 
 	protected function setToken($response) {
 		$body = (string) $response->getBody();
@@ -167,20 +173,21 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface, BootableProv
 
 
 	protected function makeAuthUrl() {
-		return $this->config['base_url'] .
+		return $this->config['base_uri'] .
 				sprintf($this->app['jira.authorization_url'],
 						urlencode($this->app['jira.token']['oauth_token']));
 	}
 
 	protected function getClient(Oauth1 $oauth) {
-		$client = new Client([
-				'base_url' => $this->config['base_url'],
-				'defaults' => ['auth' => 'oauth']
-			]);
+        $stack = HandlerStack::create();
+        $stack->push($oauth);
 
-		$client->getEmitter()->attach($oauth);
-
-		return $client;
+        $client = new Client([
+            'base_uri' => $this->config['base_uri'],
+            'handler' => $stack,
+            'auth' => 'oauth'
+        ]);
+        return $client;
 	}
 
 	protected function getOAuth() {
@@ -193,7 +200,8 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface, BootableProv
 			'token'				=> $token ? $token['oauth_token'] : null,
 			'token_secret'		=> $token ? $token['oauth_token_secret'] : null,
 			'signature_method'	=> Oauth1::SIGNATURE_METHOD_RSA,
-			'private_key_file'	=> 'file://' . $this->config['private_key']
+			'private_key_file'	=> $this->config['private_key'],
+            'private_key_passphrase' => $this->config['private_key_passphrase']
 		]);
 	}
 
