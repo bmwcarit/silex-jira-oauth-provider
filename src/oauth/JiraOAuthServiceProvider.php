@@ -39,7 +39,7 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface, BootableProv
 
 	public function __construct(array $config) {
 		$defaults = array(
-			'base_uri' => 'http://localhost:8181/',
+			'base_url' => 'http://localhost:8181/',
 			'oauth_base_url' => 'plugins/servlet/oauth/',
 			'private_key' => '',
             'private_key_passphrase' => '',
@@ -110,7 +110,7 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface, BootableProv
 	}
 
 	protected function requestTempCredentials($redirect) {
-		$url = $this->config['base_uri'] .
+		$url = $this->config['base_url'] .
 				$this->app['jira.request_token_url'] .
 				'?oauth_callback=' . $this->getCallbackURL($redirect);
 
@@ -122,7 +122,7 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface, BootableProv
 	}
 
 	protected function requestAuthCredentials($redirect) {
-		$url = $this->config['base_uri'] . $this->app['jira.access_token_url'] .
+		$url = $this->config['base_url'] . $this->app['jira.access_token_url'] .
 				'?oauth_callback=' . $this->getCallbackURL($redirect) .
 				'&oauth_verifier=' . $this->app['jira.oauth_verifier'];
 
@@ -154,7 +154,7 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface, BootableProv
 	}
 
     protected function getCallbackBaseURL(){
-        return $_SERVER['REQUEST_SCHEME'].'://'.$_SERVER['HTTP_HOST'];
+        return (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') ? 'http://'.$_SERVER['HTTP_HOST'] : 'https://'.$_SERVER['HTTP_HOST'];
     }
 
 	protected function setToken($response) {
@@ -173,7 +173,7 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface, BootableProv
 
 
 	protected function makeAuthUrl() {
-		return $this->config['base_uri'] .
+		return $this->config['base_url'] .
 				sprintf($this->app['jira.authorization_url'],
 						urlencode($this->app['jira.token']['oauth_token']));
 	}
@@ -183,7 +183,7 @@ class JiraOAuthServiceProvider implements ServiceProviderInterface, BootableProv
         $stack->push($oauth);
 
         $client = new Client([
-            'base_uri' => $this->config['base_uri'],
+            'base_uri' => $this->config['base_url'],
             'handler' => $stack,
             'auth' => 'oauth'
         ]);
