@@ -22,7 +22,7 @@
  */
 
 use Silex\Application;
-use Silex\ControllerProviderInterface;
+use Silex\Api\ControllerProviderInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Exception\RouteNotFoundException;
 
@@ -34,15 +34,15 @@ class JiraOAuthControllerProvider implements ControllerProviderInterface{
 		$jira = $app['controllers_factory'];
 
 		$jira->get('/connect/{redirect}',
-				function(Request $request, $redirect) use($app) {
+			function(Request $request, $redirect) use($app) {
 
-			$token = $app['jira.oauth.temp_credentials']($redirect);
-			$app['session']->set('oauth', $token);
+				$token = $app['jira.oauth.temp_credentials']($redirect);
+				$app['session']->set('oauth', $token);
 
-			return $app->redirect($app['jira.oauth.auth_url']);
-		})
-		->value('redirect', null)
-		->bind('jira-connect');
+				return $app->redirect($app['jira.oauth.auth_url']);
+			})
+			->value('redirect', null)
+			->bind('jira-connect');
 
 		$jira->get('/callback', function($url, $verifier) use($app) {
 			$tempToken = $app['session']->get('oauth');

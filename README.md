@@ -28,15 +28,6 @@ You can install the silex jira oauth provider through
 
 	composer require bmwcarit/silex-jira-oauth-provider "dev-master"
 
-The provider currently uses the dev-master version of the
-[guzzlehttp/oauth-provider](https://github.com/guzzle/oauth-subscriber)
-as it contains a necessary bugfix. To be able to pull this version
-with composer you need to set the minimum stability of your project to
-"dev":
-
-    {
-        "minimum-stability": "dev"
-	}
 
 Usage
 -----
@@ -48,6 +39,7 @@ options that are necessary:
 	$app->register(new JiraOAuthServiceProvider(array(
 		'base_url' => 'https://www.yourcorp.com/jira/',
 		'private_key' => __DIR__ . '/jira.pem',
+		'private_key_passphrase' => '',
 		'consumer_key' => 'yoursecretkey',
 	)));
 
@@ -81,7 +73,10 @@ After successful authentication you can use the [Atlassian JIRA REST API]
 available [Guzzle HTTP Client](http://guzzle.readthedocs.org/en/latest/).
 For example:
 
-	$app['jira.oauth.client']->get('rest/api/2/priority');
+	$priorities = $app['oauth']->getClient(
+    			$oauth['oauth_token'], 
+    			$oauth['oauth_token_secret']
+    		)->get('rest/api/2/priority')->send()->json();
 
 Configuration Options
 ---------------------
@@ -96,6 +91,9 @@ default.
 * **private_key:**
 The path to the private key file that authenticate your application with
 Atlassian JIRA.
+(*default*: `''`)
+* **private_key_passphrase:**
+The password the private key was encrypted with
 (*default*: `''`)
 * **consumer_key:**
 A string containing the consumer key that is used to authenticate your
